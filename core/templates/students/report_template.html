@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Report Card</title>
+</head>
+<body>
+    <h2>Report Card for {{ student.first_name }} {{ student.last_name }}</h2>
+    <p>Course: {{ course.name }}</p>
+    <p>Date: {{ today }}</p>
+
+    <h3>Grades</h3>
+    <table>
+        <tr>
+            <th>Subject</th>
+            <th>Class Score</th>
+            <th>Exam Score</th>
+            <th>Total Score</th>
+            <th>Grade</th>
+        </tr>
+        {% for grade in grades %}
+        <tr>
+            <td>{{ grade.subject.name }}</td>
+            <td>{{ grade.class_score }}</td>
+            <td>{{ grade.exam_score }}</td>
+            <td>{{ grade.total_score }}</td>
+            <td>{{ grade.grade }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+
+    <h3>Attendance</h3>
+    <table>
+        <tr>
+            <th>Date</th>
+            <th>Status</th>
+        </tr>
+        {% for record in attendance %}
+        <tr>
+            <td>{{ record.date }}</td>
+            <td>{{ record.status }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+
+    <h3>Teacher's Remarks</h3>
+    <p>{{ course.teacher_remarks }}</p>
+
+    <h3>Head Teacher's Remarks</h3>
+    <p>{{ course.head_teacher_remarks }}</p>
+</body>
+</html>

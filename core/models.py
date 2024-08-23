@@ -56,18 +56,37 @@ class StudentProfile(models.Model):
     class_teacher_remark = models.TextField()
     head_teacher_remark = models.TextField()
 
+    def __str__(self):
+        return f"{self.user.first_name} {self.user.last_name} Profile"
+
+
 class Course(models.Model):
     name = models.CharField(max_length=100)
     teacher = models.ForeignKey(User, on_delete=models.CASCADE, limit_choices_to={'role': 'Teacher'})
+    students = models.ManyToManyField(User, related_name='courses', limit_choices_to={'role': 'Student'})
+
+    def __str__(self):
+        return self.name
+
 
 class Subject(models.Model):
     name = models.CharField(max_length=100)
-    course = models.ForeignKey(Course, on_delete=models.CASCADE)
-    
+    course = models.ForeignKey(Course, on_delete=models.CASCADE, related_name='subjects')
+    teacher = models.ForeignKey(User, on_delete=models.CASCADE, limit_choices_to={'role': 'Teacher'})
+
+    def __str__(self):
+        return f"{self.name} ({self.course.name})"
+
+
 class Attendance(models.Model):
     student = models.ForeignKey(User, on_delete=models.CASCADE, limit_choices_to={'role': 'Student'})
+    subject = models.ForeignKey(Subject, on_delete=models.CASCADE)
     date = models.DateField()
     status = models.CharField(max_length=10, choices=[('Present', 'Present'), ('Absent', 'Absent')])
+
+    def __str__(self):
+        return f"Attendance for {self.student.first_name} {self.student.last_name} on {self.date}"
+
 
 class Grade(models.Model):
     student = models.ForeignKey(User, on_delete=models.CASCADE, limit_choices_to={'role': 'Student'})
@@ -80,3 +99,6 @@ class Grade(models.Model):
     def save(self, *args, **kwargs):
         self.total_score = self.class_score + self.exam_score
         super().save(*args, **kwargs)
+
+    def __str__(self):
+        return f"Grade for {self.student.first_name} {self.student.last_name} in {self.subject.name}"
