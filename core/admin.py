@@ -11,24 +11,24 @@ class CustomUserCreationForm(UserCreationForm):
 class CustomUserChangeForm(UserChangeForm):
     class Meta(UserChangeForm.Meta):
         model = User
-        fields = ('email', 'first_name', 'last_name', 'role', 'dob')
+        fields = ('email', 'first_name', 'last_name', 'role', 'dob', 'profile_picture')
 
 @admin.register(User)
 class UserAdmin(BaseUserAdmin):
     form = CustomUserChangeForm
     add_form = CustomUserCreationForm
     change_password_form = AdminPasswordChangeForm
-    list_display = ('email', 'first_name', 'last_name', 'role', 'is_staff')
+    list_display = ('email', 'first_name', 'last_name', 'role', 'is_staff', 'profile_picture')
     list_filter = ('role', 'is_staff', 'is_superuser')
     fieldsets = (
         (None, {'fields': ('email', 'password')}),
-        ('Personal info', {'fields': ('first_name', 'last_name', 'dob')}),
+        ('Personal info', {'fields': ('first_name', 'last_name', 'dob', 'role', 'profile_picture')}),
         ('Permissions', {'fields': ('is_staff', 'is_superuser', 'groups', 'user_permissions')}),
     )
     add_fieldsets = (
         (None, {
             'classes': ('wide',),
-            'fields': ('email', 'first_name', 'last_name', 'password1', 'password2', 'role', 'is_staff', 'is_superuser'),
+            'fields': ('email', 'first_name', 'last_name', 'password1', 'password2', 'role', 'is_staff', 'is_superuser', 'profile_picture'),
         }),
     )
     search_fields = ('email', 'first_name', 'last_name')

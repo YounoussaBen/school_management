@@ -1,0 +1,70 @@
+<style>
+        /* Sidebar Styling */
+        .sidebar {
+        width: var(--sidebar-width);
+        background-color: var(--sidebar-bg-color);
+        box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+        transition: all 0.3s ease;
+        z-index: 1000;
+        overflow-x: hidden;
+    }
+
+    .sidebar-header {
+        padding: 20px;
+        text-align: center;
+        border-bottom: 1px solid var(--secondary-color);
+    }
+
+    .sidebar-header img {
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        object-fit: cover;
+        margin-bottom: 10px;
+        border: 2px solid var(--primary-color);
+    }
+
+    .sidebar-header h3 {
+        margin: 0;
+        font-size: 18px;
+        font-weight: 600;
+        color: var(--text-light);
+    }
+
+    .sidebar-menu {
+        padding: 20px 0;
+    }
+
+    .sidebar-menu a {
+        display: flex;
+        align-items: center;
+        padding: 12px 20px;
+        color: var(--text-light);
+        text-decoration: none;
+        transition: all 0.3s ease;
+    }
+
+    .sidebar-menu a:hover, .sidebar-menu a.active {
+        background-color: var(--primary-color);
+        color: #ffffff;
+    }
+
+    .sidebar-menu i {
+        font-size: 20px;
+        margin-right: 15px;
+    }
+
+</style>
+<!-- sidebar.html -->
+<aside class="sidebar">
+    <div class="sidebar-header">
+        <img src="{{ student.profile_picture.url }}" alt="{{ student.first_name }} {{ student.last_name }}">
+        <h3>{{ student.first_name }} {{ student.last_name }}</h3>
+    </div>
+    <nav class="sidebar-menu">
+        <a href="{% url 'student_home' %}"><i class="bi bi-person-circle"></i> <span>Home</span></a>
+        <a href="{% url 'student_courses' %}"><i class="bi bi-journal-bookmark"></i> <span>Course</span></a>
+        <a href="{% url 'student_attendance' %}"><i class="bi bi-calendar-check"></i> <span>Attendance</span></a>
+        <a href="{% url 'student_logout' %}"><i class="bi bi-box-arrow-right"></i> <span>Logout</span></a>
+    </nav>
+</aside>

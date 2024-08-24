@@ -1,60 +1,205 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Student Attendance</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <style>
-        .calendar {
-            display: grid;
-            grid-template-columns: repeat(7, 1fr);
-            gap: 1px;
-            margin-top: 20px;
+{% extends 'base.html' %}
+
+{% block title %}Student Attendance{% endblock %}
+
+{% block extra_css %}
+<style>
+    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+
+    :root {
+        --primary-color: #007bff;
+        --secondary-color: #e9ecef;
+        --text-color: #212529;
+        --text-light: #6c757d;
+        --bg-color: #f8f9fa;
+        --sidebar-bg-color: #343a40;
+        --sidebar-width: 250px;
+        --sidebar-collapsed-width: 80px;
+        --card-bg-color: #ffffff;
+        --present-color: #d4edda;
+        --absent-color: #f8d7da;
+        --placeholder-color: #e2e3e5;
+    }
+
+    body {
+        font-family: 'Poppins', sans-serif;
+        background-color: var(--bg-color);
+        color: var(--text-color);
+        margin: 0;
+        padding: 0;
+    }
+
+    .dashboard-container {
+        display: flex;
+        min-height: 100vh;
+    }
+
+    /* Sidebar Styling (unchanged) */
+    /* ... */
+
+    /* Main Content Styling */
+    .main-content {
+        flex: 1;
+        padding: 30px;
+        transition: all 0.3s ease;
+    }
+
+    .attendance-container {
+        max-width: 800px;
+        margin: 0 auto;
+    }
+
+    .attendance-header {
+        background-color: var(--card-bg-color);
+        border-radius: 10px;
+        padding: 20px;
+        margin-bottom: 30px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .attendance-header h2 {
+        margin: 0;
+        font-size: 24px;
+        font-weight: 600;
+        color: var(--primary-color);
+    }
+
+    .navigation-buttons {
+        display: flex;
+        gap: 10px;
+    }
+
+    .nav-button {
+        background-color: var(--primary-color);
+        color: #ffffff;
+        border: none;
+        padding: 8px 16px;
+        border-radius: 5px;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+    }
+
+    .nav-button:hover {
+        background-color: #0056b3;
+    }
+
+    .attendance-card {
+        background-color: var(--card-bg-color);
+        border-radius: 10px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        margin-bottom: 20px;
+        transition: all 0.3s ease;
+        overflow: hidden;
+    }
+
+    .attendance-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+    }
+
+    .attendance-card-header {
+        background-color: var(--primary-color);
+        color: #ffffff;
+        padding: 15px 20px;
+    }
+
+    .attendance-card-header h3 {
+        margin: 0;
+        font-size: 20px;
+        font-weight: 600;
+    }
+
+    .attendance-card-body {
+        padding: 20px;
+    }
+
+    .attendance-table {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0;
+    }
+
+    .attendance-table th, .attendance-table td {
+        padding: 10px;
+        text-align: center;
+        border: 1px solid var(--secondary-color);
+    }
+
+    .attendance-table th {
+        background-color: var(--secondary-color);
+        font-weight: 600;
+        color: var(--text-color);
+    }
+
+    .attendance-table td {
+        height: 40px;
+        width: 40px;
+    }
+
+    .attendance-table td.present {
+        background-color: var(--present-color);
+    }
+
+    .attendance-table td.absent {
+        background-color: var(--absent-color);
+    }
+
+    .attendance-table td.placeholder {
+        background-color: var(--placeholder-color);
+    }
+
+    /* Responsive Design */
+    @media (max-width: 768px) {
+        .sidebar {
+            width: var(--sidebar-collapsed-width);
         }
-        .calendar div {
-            padding: 5px;
-            border: 1px solid #ddd;
-            text-align: center;
+
+        .sidebar-header h3, .sidebar-menu span {
+            display: none;
         }
-        .header {
-            background-color: #f8f9fa;
-            font-weight: bold;
+
+        .main-content {
+            margin-left: var(--sidebar-collapsed-width);
         }
-        .present {
-            background-color: #d4edda;
+
+        .attendance-card {
+            margin-bottom: 30px;
         }
-        .absent {
-            background-color: #f8d7da;
-        }
-        .placeholder {
-            background-color: #e2e3e5;
-        }
-    </style>
-</head>
-<body>
-    <div class="container mt-4">
-        <h2 class="mb-4">Attendance Calendar - {{ month }} {{ year }}</h2>
-    
-        {% for subject_data in calendar_data %}
-        <div class="card mb-4">
-            <div class="card-header">
-                <h3 class="card-title">{{ subject_data.subject.name }}</h3>
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="dashboard-container">
+    {% include 'sidebar.html' %}
+
+    <main class="main-content">
+        <div class="attendance-container">
+            <div class="attendance-header">
+                <h2>Attendance - <span id="current-month-year">{{ week_start|date:"F j, Y" }} - {{ week_end|date:"F j, Y" }}</span></h2>
             </div>
-            <div class="card-body">
-                <div class="table-responsive">
-                    <table class="table table-bordered">
+            
+            {% for subject_data in calendar_data %}
+            <div class="attendance-card">
+                <div class="attendance-card-header">
+                    <h3>{{ subject_data.subject.name }}</h3>
+                </div>
+                <div class="attendance-card-body">
+                    <table class="attendance-table">
                         <thead>
                             <tr>
-                                {% for day in days %}
-                                <th>{{ day }}</th>
+                                {% for day in subject_data.attendance.keys %}
+                                <th>{{ day|date:"D j" }}</th>
                                 {% endfor %}
                             </tr>
                         </thead>
-                        <tbody>
+                        <tbody id="attendance-body-{{ subject_data.subject.id }}">
                             <tr>
-                                {% for status in subject_data.attendance %}
-                                <td class="{% if status == 'Present' %}table-success{% elif status == 'Absent' %}table-danger{% else %}table-light{% endif %}">
+                                {% for date, status in subject_data.attendance.items %}
+                                <td class="{% if status == 'Present' %}present{% elif status == 'Absent' %}absent{% else %}placeholder{% endif %}">
                                     {{ status }}
                                 </td>
                                 {% endfor %}
@@ -63,8 +208,54 @@
                     </table>
                 </div>
             </div>
+            {% endfor %}
         </div>
-        {% endfor %}
-    </div>
-</body>
-</html>
+    </main>
+</div>
+
+<script>
+    let currentWeekStart = new Date("{{ week_start }}");
+    
+    function updateAttendanceView() {
+        const startDate = new Date(currentWeekStart);
+        const endDate = new Date(startDate);
+        endDate.setDate(startDate.getDate() + 6);
+
+        document.getElementById('current-month-year').textContent = 
+            startDate.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }) + " - " +
+            endDate.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+
+        attendanceData.forEach(subject => {
+            const tableBody = document.getElementById(`attendance-body-${subject.subject.id}`);
+            tableBody.innerHTML = '';
+
+            let row = document.createElement('tr');
+            for (let i = 0; i < 7; i++) {
+                let cell = document.createElement('td');
+                const currentDate = new Date(startDate);
+                currentDate.setDate(currentWeekStart.getDate() + i);
+
+                const dateString = currentDate.toISOString().split('T')[0];
+                const status = subject.attendance[dateString] || '-';
+                cell.textContent = status;
+                cell.className = status.toLowerCase() || 'placeholder';
+                row.appendChild(cell);
+            }
+
+            tableBody.appendChild(row);
+        });
+    }
+
+    document.getElementById('prev-week').addEventListener('click', () => {
+        currentWeekStart.setDate(currentWeekStart.getDate() - 7);
+        updateAttendanceView();
+    });
+
+    document.getElementById('next-week').addEventListener('click', () => {
+        currentWeekStart.setDate(currentWeekStart.getDate() + 7);
+        updateAttendanceView();
+    });
+
+    updateAttendanceView();
+</script>
+{% endblock %}

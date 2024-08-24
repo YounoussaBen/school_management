@@ -1,13 +1,12 @@
 from django.shortcuts import render, redirect
-from django.contrib.auth import authenticate, login
+from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse
 from .models import Subject, Course, Attendance, Grade
 from django.template.loader import get_template
 from xhtml2pdf import pisa
-from datetime import datetime
-from calendar import monthrange
-
+from datetime import datetime, timedelta
+from django.db.models import Avg
 
 # Student Login View
 def student_login(request):
@@ -17,17 +16,58 @@ def student_login(request):
         user = authenticate(request, email=email, password=password)
         if user is not None and user.role == 'Student':
             login(request, user)
-            return redirect('student_profile')
+            return redirect('student_home')
         else:
             return render(request, 'students/login.html', {'error': 'Invalid credentials'})
     return render(request, 'students/login.html')
 
-# Student Profile View
+# Student Logout View
 @login_required
-def student_profile(request):
+def student_logout(request):
+    logout(request)
+    return redirect('student_login')
+
+# Student Home View
+@login_required
+def student_home(request):
     if request.user.role != 'Student':
         return redirect('student_login')
-    return render(request, 'students/profile.html', {'student': request.user})
+
+    # Get the course the student is enrolled in
+    course = Course.objects.filter(students=request.user).first()
+
+    # Calculate Overall GPA if grades exist
+    grades = Grade.objects.filter(student=request.user)
+    if grades.exists():
+        total_score = sum(grade.total_score for grade in grades)
+        overall_gpa = round(total_score / grades.count(), 2)
+    else:
+        overall_gpa = 'N/A'
+
+    # Calculate Attendance Rate
+    total_classes = Attendance.objects.filter(student=request.user).count()
+    attended_classes = Attendance.objects.filter(student=request.user, status='Present').count()
+    attendance_rate = round((attended_classes / total_classes) * 100, 2) if total_classes > 0 else 0
+
+    # Fetch Recent Activities (e.g., new grades, attendance, etc.)
+    recent_grades = Grade.objects.filter(student=request.user).order_by('-id')[:5]
+    recent_attendance = Attendance.objects.filter(student=request.user).order_by('-date')[:5]
+
+    recent_activities = sorted(
+        list(recent_grades) + list(recent_attendance),
+        key=lambda x: getattr(x, 'date', getattr(x, 'subject', None)),
+        reverse=True
+    )[:5]
+
+    context = {
+        'student': request.user,
+        'course_name': course.name if course else 'Not enrolled in any course',
+        'overall_gpa': overall_gpa,
+        'attendance_rate': attendance_rate,
+        'recent_activities': recent_activities,
+    }
+
+    return render(request, 'students/home.html', context)
 
 @login_required
 def student_courses(request):
@@ -44,57 +84,53 @@ def student_courses(request):
     grades = Grade.objects.filter(student=request.user, subject__in=subjects)
 
     return render(request, 'students/course.html', {
+        'student': request.user,  # Include student data
         'course': course,
         'subjects': subjects,
         'grades': grades
     })
 
-
-# Student Attendance View
 @login_required
 def student_attendance(request):
-    # Get the current month and year
     today = datetime.now()
-    year = today.year
-    month = today.month
+    week_start = today - timedelta(days=today.weekday())
+    week_end = week_start + timedelta(days=6)
 
-    # Get the number of days in the current month
-    _, num_days = monthrange(year, month)
-
-    # Get all subjects for the student
     subjects = Subject.objects.filter(course__students=request.user)
-
-    # Prepare the calendar data
     calendar_data = []
+
     for subject in subjects:
-        subject_attendance = []
-        for day in range(1, num_days + 1):
-            date = datetime(year, month, day).date()
+        subject_attendance = {}
+        for day in range(7):
+            date = (week_start + timedelta(days=day)).date()
             try:
                 attendance = Attendance.objects.get(student=request.user, subject=subject, date=date)
                 status = attendance.status
             except Attendance.DoesNotExist:
                 status = '-'
-            subject_attendance.append(status)
+            subject_attendance[date] = status
         calendar_data.append({
             'subject': subject,
             'attendance': subject_attendance
         })
 
     context = {
+        'student': request.user,  # Include student data
         'calendar_data': calendar_data,
-        'days': range(1, num_days + 1),
         'month': today.strftime('%B'),
-        'year': year,
+        'year': today.year,
+        'week_start': week_start,
+        'week_end': week_end,
     }
 
     return render(request, 'students/attendance.html', context)
 
-# Download PDF Report View
-@login_required
+
+@login_required(login_url='student_login')
 def download_report(request, course_id):
-    if request.user.role != 'Student':
+    if not request.user.is_authenticated:
         return redirect('student_login')
+
     course = Course.objects.get(id=course_id)
     grades = Grade.objects.filter(student=request.user, subject__course=course)
     attendance = Attendance.objects.filter(student=request.user)

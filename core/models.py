@@ -35,7 +35,8 @@ class User(AbstractBaseUser, PermissionsMixin):
     last_name = models.CharField(max_length=30)
     role = models.CharField(max_length=10, choices=ROLE_CHOICES)
     dob = models.DateField(null=True, blank=True)  # Optional field
-    
+    profile_picture = models.ImageField(upload_to='profile_pictures/', null=True, blank=True)
+
     is_staff = models.BooleanField(default=False)
     is_superuser = models.BooleanField(default=False)
     
