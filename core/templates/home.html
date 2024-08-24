@@ -1,0 +1,287 @@
+{% extends 'base.html' %}
+
+{% block title %}Bright Future Academy - Home{% endblock %}
+
+{% block extra_css %}
+<style>
+    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+
+    body {
+        font-family: 'Poppins', sans-serif;
+        line-height: 1.6;
+        color: #333;
+        margin: 0;
+        padding: 0;
+    }
+
+    .header {
+        background-color: #2c3e50;
+        color: #fff;
+        padding: 1rem 2rem;
+        position: fixed;
+        top: 0;
+        width: 100%;
+        z-index: 1000;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        transition: background-color 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .header.scrolled {
+        background-color: #1a242f;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+    }
+
+    .nav-container {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        max-width: 1200px;
+        margin: 0 auto;
+    }
+
+    .logo {
+        display: flex;
+        align-items: center;
+    }
+
+    .logo img {
+        width: 50px;
+        height: 50px;
+        margin-right: 0.5rem;
+        border-radius: 50%;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .logo h1 {
+        font-size: 1.8rem;
+        margin: 0;
+        font-weight: 600;
+    }
+
+    .nav-links {
+        display: flex;
+        align-items: center;
+    }
+
+    .nav-links a {
+        color: #fff;
+        text-decoration: none;
+        margin-left: 1.5rem;
+        font-weight: 500;
+        position: relative;
+        transition: color 0.3s ease;
+    }
+
+    .nav-links a:hover {
+        color: #3498db;
+    }
+
+    .nav-links a::after {
+        content: '';
+        display: block;
+        height: 2px;
+        background: #3498db;
+        transition: width 0.3s ease;
+        width: 0%;
+        position: absolute;
+        bottom: -5px;
+        left: 0;
+    }
+
+    .nav-links a:hover::after {
+        width: 100%;
+    }
+
+    .hero {
+        background: linear-gradient(rgba(44, 62, 80, 0.7), rgba(44, 62, 80, 0.7)),
+                    url('https://img.freepik.com/free-photo/modern-school-building_23-2147917345.jpg?w=1380&t=st=1692903090~exp=1692903690~hmac=6a8ba3c086aad3c242d5e0cb2c2aeee87b40e9580f99e5c27aabd3302eed8a9d') no-repeat center center;
+        background-size: cover;
+        height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        color: #fff;
+        padding: 0 2rem;
+    }
+
+    .hero-content h2 {
+        font-size: 3.5rem;
+        margin-bottom: 1rem;
+        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+    }
+
+    .hero-content p {
+        font-size: 1.2rem;
+        max-width: 800px;
+        margin: 0 auto 2rem;
+    }
+
+    .cta-buttons {
+        display: flex;
+        justify-content: center;
+        gap: 1rem;
+    }
+
+    .cta-button {
+        padding: 0.8rem 2rem;
+        font-size: 1rem;
+        font-weight: 600;
+        text-decoration: none;
+        border-radius: 50px;
+        transition: all 0.3s ease;
+    }
+
+    .primary-cta {
+        background-color: #3498db;
+        color: #fff;
+        box-shadow: 0 4px 6px rgba(52, 152, 219, 0.4);
+    }
+
+    .primary-cta:hover {
+        background-color: #2980b9;
+        box-shadow: 0 6px 8px rgba(52, 152, 219, 0.6);
+    }
+
+    .secondary-cta {
+        background-color: #2c3e50;
+        color: #fff;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+    }
+
+    .secondary-cta:hover {
+        background-color: #2c3e50;
+        box-shadow: 0 6px 8px rgba(0, 0, 0, 0.3);
+    }
+
+    .section {
+        padding: 5rem 2rem;
+    }
+
+    .section-title {
+        text-align: center;
+        font-size: 2.5rem;
+        margin-bottom: 3rem;
+    }
+
+    .about-content, .contact-content {
+        max-width: 800px;
+        margin: 0 auto;
+        line-height: 1.8;
+    }
+
+    .features {
+        display: flex;
+        justify-content: space-around;
+        flex-wrap: wrap;
+        gap: 2rem;
+    }
+
+    .feature-item {
+        flex-basis: calc(33.333% - 2rem);
+        text-align: center;
+    }
+
+    .feature-item i {
+        font-size: 3rem;
+        color: #2c3e50;
+        margin-bottom: 1rem;
+    }
+
+    .contact-info {
+        display: flex;
+        justify-content: space-between;
+        margin-top: 2rem;
+    }
+
+    .contact-item {
+        flex-basis: calc(33.333% - 1rem);
+    }
+
+    .footer {
+        background-color: #2c3e50;
+        color: #fff;
+        text-align: center;
+        padding: 2rem;
+    }
+</style>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+{% endblock %}
+
+{% block content %}
+<header class="header">
+    <nav class="nav-container">
+        <div class="logo">
+            <img src="https://play-lh.googleusercontent.com/y3x_qIXz5sKBn4hEG0HzmJc-neevDBMzP4WvepMZzPlBBMzgRYxKP_bwEytYM_A5UKCk" alt="School Logo">
+            <h1>Bright Future Academy</h1>
+        </div>
+        <div class="nav-links">
+            <a href="#about">About</a>
+            <a href="#features">Features</a>
+            <a href="#contact">Contact</a>
+        </div>
+    </nav>
+</header>
+
+<section class="hero">
+    <div class="hero-content">
+        <h2>Welcome to Bright Future Academy</h2>
+        <p>Empowering minds, shaping futures, and fostering excellence in education.</p>
+        <div class="cta-buttons">
+            <a href="{% url 'student_login' %}" class="cta-button primary-cta">Student Portal</a>
+            <a href="{% url 'teacher_login' %}" class="cta-button secondary-cta">Teacher Portal</a>
+        </div>
+    </div>
+</section>
+
+<section id="about" class="section">
+    <h2 class="section-title">About Our School</h2>
+    <div class="about-content">
+        <p>Bright Future Academy is a leading educational institution committed to providing a nurturing environment for academic excellence and personal growth. Our dedicated faculty and state-of-the-art facilities ensure that every student receives a world-class education.</p>
+        <p>Founded in 1985, we have a rich history of producing successful graduates who have gone on to make significant contributions in various fields across the globe.</p>
+    </div>
+</section>
+
+<section id="features" class="section" style="background-color: #f8f9fa;">
+    <h2 class="section-title">Why Choose Us</h2>
+    <div class="features">
+        <div class="feature-item">
+            <i class="fas fa-graduation-cap"></i>
+            <h3>Academic Excellence</h3>
+            <p>Rigorous curriculum designed to challenge and inspire students.</p>
+        </div>
+        <div class="feature-item">
+            <i class="fas fa-users"></i>
+            <h3>Experienced Faculty</h3>
+            <p>Dedicated teachers committed to nurturing each student's potential.</p>
+        </div>
+        <div class="feature-item">
+            <i class="fas fa-laptop"></i>
+            <h3>Modern Facilities</h3>
+            <p>State-of-the-art classrooms and laboratories for enhanced learning.</p>
+        </div>
+    </div>
+</section>
+
+<section id="contact" class="section">
+    <h2 class="section-title">Contact Us</h2>
+    <div class="contact-content">
+        <p>We're here to answer any questions you may have about our programs, admissions, or general inquiries. Feel free to reach out to us using the information below.</p>
+        <div class="contact-info">
+            <div class="contact-item">
+                <h4><i class="fas fa-map-marker-alt"></i> Address</h4>
+                <p>123 Education Lane<br>Learningville, ED 12345</p>
+            </div>
+            <div class="contact-item">
+                <h4><i class="fas fa-phone"></i> Phone</h4>
+                <p>+1 (555) 123-4567</p>
+            </div>
+            <div class="contact-item">
+                <h4><i class="fas fa-envelope"></i> Email</h4>
+                <p>info@brightfutureacademy.edu</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+{% endblock %}

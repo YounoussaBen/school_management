@@ -8,6 +8,10 @@ from xhtml2pdf import pisa
 from datetime import datetime, timedelta
 from django.db.models import Avg
 
+def home(request):
+    return render(request, 'home.html')
+
+
 # Student Login View
 def student_login(request):
     if request.method == "POST":

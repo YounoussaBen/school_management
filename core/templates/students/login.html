@@ -1,6 +1,6 @@
 {% extends 'base.html' %}
 
-{% block title %}Student Login{% endblock %}
+{% block title %}Student Login - Bright Future Academy{% endblock %}
 
 {% block extra_css %}
 <style>
@@ -53,7 +53,7 @@
         font-size: 2rem;
         font-weight: 700;
         margin-bottom: 2rem;
-        color: #333;
+        color: #4a90e2;
         text-align: center;
     }
     .form-container .form-control {
@@ -101,7 +101,7 @@
     .right-side {
         flex: 2;
         background: linear-gradient(rgba(74, 144, 226, 0.7), rgba(74, 144, 226, 0.7)), 
-                    url('https://img.freepik.com/free-vector/hand-drawn-back-school-background_23-2149464866.jpg?size=626&ext=jpg&ga=GA1.1.2008272138.1724284800&semt=ais_hybrid') no-repeat center center;
+                    url('https://img.freepik.com/free-vector/group-college-university-students-hanging-out_74855-5251.jpg?w=1380&t=st=1692900666~exp=1692901266~hmac=6f486e3d4a81c4c39030aa8f8e8a3202cb812a5dca3388c7a3e0b6b6c3f17dab') no-repeat center center;
         background-size: cover;
         display: flex;
         align-items: center;
@@ -137,7 +137,21 @@
         line-height: 1.6;
         text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
     }
+    .student-features {
+        margin-top: 2rem;
+        display: flex;
+        justify-content: space-around;
+    }
+    .feature-item {
+        text-align: center;
+        padding: 1rem;
+    }
+    .feature-item i {
+        font-size: 2rem;
+        margin-bottom: 0.5rem;
+    }
 </style>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 {% endblock %}
 
 {% block content %}
@@ -145,16 +159,16 @@
     <!-- Left Side: School Logo and Login Form -->
     <div class="left-side">
         <div class="header">
-            <img src="https://img.freepik.com/free-vector/hand-drawn-back-school-background_23-2149464866.jpg?size=626&ext=jpg&ga=GA1.1.2008272138.1724284800&semt=ais_hybrid" alt="School Logo">
+            <img src="https://play-lh.googleusercontent.com/y3x_qIXz5sKBn4hEG0HzmJc-neevDBMzP4WvepMZzPlBBMzgRYxKP_bwEytYM_A5UKCk" alt="School Logo">
             <h1>Bright Future Academy</h1>
         </div>
         <div class="form-container">
-            <h3>Welcome Back!</h3>
+            <h3>Student Portal Login</h3>
             <form method="post">
                 {% csrf_token %}
                 <div class="mb-3">
-                    <label for="email" class="form-label">Email address</label>
-                    <input type="email" class="form-control" id="email" name="email" required autofocus placeholder="Enter your email">
+                    <label for="email" class="form-label">Student Email</label>
+                    <input type="email" class="form-control" id="email" name="email" required autofocus placeholder="Enter your student email">
                 </div>
                 <div class="mb-3">
                     <label for="password" class="form-label">Password</label>
@@ -164,11 +178,11 @@
                 <div class="alert alert-danger text-center">{{ error }}</div>
                 {% endif %}
                 <div class="d-grid">
-                    <button type="submit" class="btn btn-primary">Sign In</button>
+                    <button type="submit" class="btn btn-primary">Sign In to Student Portal</button>
                 </div>
             </form>
             <div class="forgot-password mt-3">
-                <a href="#">Forgot Password?</a>
+                <a href="#">Forgot Student Password?</a>
             </div>
         </div>
     </div>
@@ -176,8 +190,22 @@
     <!-- Right Side: Background Image with Content -->
     <div class="right-side">
         <div class="right-side-content">
-            <h2>Empowering Education</h2>
-            <p>Join us in shaping the future through knowledge, innovation, and personal growth. Your journey to success starts here.</p>
+            <h2>Welcome to Your Student Portal</h2>
+            <p>Access your courses, assignments, and grades all in one place. Stay connected with your classmates and teachers.</p>
+            <div class="student-features">
+                <div class="feature-item">
+                    <i class="fas fa-book-open"></i>
+                    <p>Attendance Trackers</p>
+                </div>
+                <div class="feature-item">
+                    <i class="fas fa-tasks"></i>
+                    <p>Assignments</p>
+                </div>
+                <div class="feature-item">
+                    <i class="fas fa-chart-line"></i>
+                    <p>Grade Tracker</p>
+                </div>
+            </div>
         </div>
     </div>
 </div>
