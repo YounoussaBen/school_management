@@ -1,0 +1,184 @@
+{% extends 'base.html' %}
+
+{% block title %}Student Login{% endblock %}
+
+{% block extra_css %}
+<style>
+    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+
+    body {
+        background: #f0f2f5;
+        font-family: 'Poppins', sans-serif;
+        margin: 0;
+        padding: 0;
+    }
+    .login-container {
+        display: flex;
+        min-height: 100vh;
+        margin: 0;
+    }
+    .left-side {
+        flex: 1;
+        padding: 4rem;
+        background-color: #ffffff;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        box-shadow: 0 0 30px rgba(0, 0, 0, 0.1);
+    }
+    .left-side .header {
+        display: flex;
+        align-items: center;
+        margin-bottom: 3rem;
+    }
+    .left-side .header img {
+        width: 60px;
+        height: 60px;
+        object-fit: cover;
+        border-radius: 12px;
+        margin-right: 1rem;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+    .left-side .header h1 {
+        font-size: 1.8rem;
+        color: #333;
+        margin: 0;
+        font-weight: 600;
+    }
+    .form-container {
+        max-width: 400px;
+        margin: 0 auto;
+    }
+    .form-container h3 {
+        font-size: 2rem;
+        font-weight: 700;
+        margin-bottom: 2rem;
+        color: #333;
+        text-align: center;
+    }
+    .form-container .form-control {
+        border-radius: 12px;
+        padding: 1rem;
+        font-size: 1rem;
+        border: 2px solid #e0e0e0;
+        transition: border-color 0.3s ease, box-shadow 0.3s ease;
+        margin-bottom: 1.5rem;
+    }
+    .form-container .form-control:focus {
+        border-color: #4a90e2;
+        box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.1);
+    }
+    .form-container .btn-primary {
+        border-radius: 12px;
+        padding: 1rem;
+        font-size: 1.1rem;
+        font-weight: 600;
+        background-color: #4a90e2;
+        color: #fff;
+        border: none;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 6px rgba(74, 144, 226, 0.2);
+    }
+    .form-container .btn-primary:hover {
+        background-color: #3a7bc8;
+        transform: translateY(-2px);
+        box-shadow: 0 6px 8px rgba(74, 144, 226, 0.3);
+    }
+    .form-container .forgot-password {
+        text-align: center;
+        margin-top: 1.5rem;
+    }
+    .form-container .forgot-password a {
+        color: #4a90e2;
+        text-decoration: none;
+        font-size: 0.95rem;
+        font-weight: 500;
+        transition: color 0.3s ease;
+    }
+    .form-container .forgot-password a:hover {
+        color: #3a7bc8;
+    }
+    .right-side {
+        flex: 2;
+        background: linear-gradient(rgba(74, 144, 226, 0.7), rgba(74, 144, 226, 0.7)), 
+                    url('https://img.freepik.com/free-vector/hand-drawn-back-school-background_23-2149464866.jpg?size=626&ext=jpg&ga=GA1.1.2008272138.1724284800&semt=ais_hybrid') no-repeat center center;
+        background-size: cover;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+        overflow: hidden;
+    }
+    .right-side::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.2);
+    }
+    .right-side-content {
+        text-align: center;
+        color: #ffffff;
+        z-index: 1;
+        padding: 2rem;
+    }
+    .right-side-content h2 {
+        font-size: 3rem;
+        font-weight: 700;
+        margin-bottom: 1rem;
+        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+    }
+    .right-side-content p {
+        font-size: 1.2rem;
+        max-width: 600px;
+        margin: 0 auto;
+        line-height: 1.6;
+        text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="login-container">
+    <!-- Left Side: School Logo and Login Form -->
+    <div class="left-side">
+        <div class="header">
+            <img src="https://img.freepik.com/free-vector/hand-drawn-back-school-background_23-2149464866.jpg?size=626&ext=jpg&ga=GA1.1.2008272138.1724284800&semt=ais_hybrid" alt="School Logo">
+            <h1>Bright Future Academy</h1>
+        </div>
+        <div class="form-container">
+            <h3>Welcome Back!</h3>
+            <form method="post">
+                {% csrf_token %}
+                <div class="mb-3">
+                    <label for="email" class="form-label">Email address</label>
+                    <input type="email" class="form-control" id="email" name="email" required autofocus placeholder="Enter your email">
+                </div>
+                <div class="mb-3">
+                    <label for="password" class="form-label">Password</label>
+                    <input type="password" class="form-control" id="password" name="password" required placeholder="Enter your password">
+                </div>
+                {% if error %}
+                <div class="alert alert-danger text-center">{{ error }}</div>
+                {% endif %}
+                <div class="d-grid">
+                    <button type="submit" class="btn btn-primary">Sign In</button>
+                </div>
+            </form>
+            <div class="forgot-password mt-3">
+                <a href="#">Forgot Password?</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Right Side: Background Image with Content -->
+    <div class="right-side">
+        <div class="right-side-content">
+            <h2>Empowering Education</h2>
+            <p>Join us in shaping the future through knowledge, innovation, and personal growth. Your journey to success starts here.</p>
+        </div>
+    </div>
+</div>
+{% endblock %}

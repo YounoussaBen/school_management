@@ -84,7 +84,7 @@ def student_courses(request):
     grades = Grade.objects.filter(student=request.user, subject__in=subjects)
 
     return render(request, 'students/course.html', {
-        'student': request.user,  # Include student data
+        'student': request.user,
         'course': course,
         'subjects': subjects,
         'grades': grades
@@ -149,3 +149,18 @@ def download_report(request, course_id):
     if pisa_status.err:
         return HttpResponse('We had some errors <pre>' + html + '</pre>')
     return response
+
+
+
+# Teacher Login View
+def teacher_login(request):
+    if request.method == "POST":
+        email = request.POST.get('email')
+        password = request.POST.get('password')
+        user = authenticate(request, email=email, password=password)
+        if user is not None and user.role == 'Teacher':
+            login(request, user)
+            return redirect('teacher_home')
+        else:
+            return render(request, 'teachers/login.html', {'error': 'Invalid credentials'})
+    return render(request, 'teachers/login.html')
