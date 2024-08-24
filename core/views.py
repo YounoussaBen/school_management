@@ -11,7 +11,6 @@ from django.db.models import Avg
 def home(request):
     return render(request, 'home.html')
 
-
 # Student Login View
 def student_login(request):
     if request.method == "POST":
@@ -26,21 +25,19 @@ def student_login(request):
     return render(request, 'students/login.html')
 
 # Student Logout View
-@login_required
+@login_required(login_url='home')
 def student_logout(request):
     logout(request)
-    return redirect('student_login')
+    return redirect('home')
 
 # Student Home View
-@login_required
+@login_required(login_url='home')
 def student_home(request):
     if request.user.role != 'Student':
-        return redirect('student_login')
+        return redirect('home')
 
-    # Get the course the student is enrolled in
     course = Course.objects.filter(students=request.user).first()
 
-    # Calculate Overall GPA if grades exist
     grades = Grade.objects.filter(student=request.user)
     if grades.exists():
         total_score = sum(grade.total_score for grade in grades)
@@ -48,12 +45,10 @@ def student_home(request):
     else:
         overall_gpa = 'N/A'
 
-    # Calculate Attendance Rate
     total_classes = Attendance.objects.filter(student=request.user).count()
     attended_classes = Attendance.objects.filter(student=request.user, status='Present').count()
     attendance_rate = round((attended_classes / total_classes) * 100, 2) if total_classes > 0 else 0
 
-    # Fetch Recent Activities (e.g., new grades, attendance, etc.)
     recent_grades = Grade.objects.filter(student=request.user).order_by('-id')[:5]
     recent_attendance = Attendance.objects.filter(student=request.user).order_by('-date')[:5]
 
@@ -73,18 +68,13 @@ def student_home(request):
 
     return render(request, 'students/home.html', context)
 
-@login_required
+@login_required(login_url='home')
 def student_courses(request):
     if request.user.role != 'Student':
-        return redirect('student_login')
+        return redirect('home')
 
-    # Get the course the student is enrolled in
     course = Course.objects.filter(students=request.user).first()
-
-    # Get the subjects under the student's course
     subjects = Subject.objects.filter(course=course)
-
-    # Get the grades for the subjects the student is enrolled in
     grades = Grade.objects.filter(student=request.user, subject__in=subjects)
 
     return render(request, 'students/course.html', {
@@ -94,7 +84,7 @@ def student_courses(request):
         'grades': grades
     })
 
-@login_required
+@login_required(login_url='home')
 def student_attendance(request):
     today = datetime.now()
     week_start = today - timedelta(days=today.weekday())
@@ -119,7 +109,7 @@ def student_attendance(request):
         })
 
     context = {
-        'student': request.user,  # Include student data
+        'student': request.user,
         'calendar_data': calendar_data,
         'month': today.strftime('%B'),
         'year': today.year,
@@ -129,11 +119,10 @@ def student_attendance(request):
 
     return render(request, 'students/attendance.html', context)
 
-
-@login_required(login_url='student_login')
+@login_required(login_url='home')
 def download_report(request, course_id):
     if not request.user.is_authenticated:
-        return redirect('student_login')
+        return redirect('home')
 
     course = Course.objects.get(id=course_id)
     grades = Grade.objects.filter(student=request.user, subject__course=course)
@@ -155,7 +144,6 @@ def download_report(request, course_id):
     return response
 
 
-
 # Teacher Login View
 def teacher_login(request):
     if request.method == "POST":
@@ -168,3 +156,29 @@ def teacher_login(request):
         else:
             return render(request, 'teachers/login.html', {'error': 'Invalid credentials'})
     return render(request, 'teachers/login.html')
+
+@login_required
+def teacher_home(request):
+    if request.user.role != 'Teacher':
+        return redirect('home')  # Redirect to home if not a teacher
+
+    # Get the courses the teacher is teaching
+    courses = Course.objects.filter(teacher=request.user)
+
+    # Fetch Recent Activities (e.g., new grades, attendance, etc.)
+    recent_grades = Grade.objects.filter(subject__course__teacher=request.user).order_by('-id')[:5]
+    recent_attendance = Attendance.objects.filter(subject__course__teacher=request.user).order_by('-date')[:5]
+
+    recent_activities = sorted(
+        list(recent_grades) + list(recent_attendance),
+        key=lambda x: getattr(x, 'date', getattr(x, 'subject', None)),
+        reverse=True
+    )[:5]
+
+    context = {
+        'teacher': request.user,
+        'courses': courses,
+        'recent_activities': recent_activities,
+    }
+
+    return render(request, 'teachers/home.html', context)

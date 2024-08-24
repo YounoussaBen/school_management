@@ -15,4 +15,5 @@ urlpatterns = [
 
 
     path('teachers/login', views.teacher_login, name='teacher_login'),
+    path('teachers/home/', views.teacher_home, name='teacher_home'),
 ]
