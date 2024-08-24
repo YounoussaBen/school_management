@@ -34,9 +34,6 @@
         min-height: 100vh;
     }
 
-    /* Sidebar Styling (unchanged) */
-    /* ... */
-
     /* Main Content Styling */
     .main-content {
         flex: 1;
@@ -199,7 +196,7 @@
                         <tbody id="attendance-body-{{ subject_data.subject.id }}">
                             <tr>
                                 {% for date, status in subject_data.attendance.items %}
-                                <td class="{% if status == 'Present' %}present{% elif status == 'Absent' %}absent{% else %}placeholder{% endif %}">
+                                <td class="{% if status == 'Present' %}present{% elif status == 'Absent' %}absent{% else %}N/A{% endif %}">
                                     {{ status }}
                                 </td>
                                 {% endfor %}
@@ -213,49 +210,4 @@
     </main>
 </div>
 
-<script>
-    let currentWeekStart = new Date("{{ week_start }}");
-    
-    function updateAttendanceView() {
-        const startDate = new Date(currentWeekStart);
-        const endDate = new Date(startDate);
-        endDate.setDate(startDate.getDate() + 6);
-
-        document.getElementById('current-month-year').textContent = 
-            startDate.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }) + " - " +
-            endDate.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
-
-        attendanceData.forEach(subject => {
-            const tableBody = document.getElementById(`attendance-body-${subject.subject.id}`);
-            tableBody.innerHTML = '';
-
-            let row = document.createElement('tr');
-            for (let i = 0; i < 7; i++) {
-                let cell = document.createElement('td');
-                const currentDate = new Date(startDate);
-                currentDate.setDate(currentWeekStart.getDate() + i);
-
-                const dateString = currentDate.toISOString().split('T')[0];
-                const status = subject.attendance[dateString] || '-';
-                cell.textContent = status;
-                cell.className = status.toLowerCase() || 'placeholder';
-                row.appendChild(cell);
-            }
-
-            tableBody.appendChild(row);
-        });
-    }
-
-    document.getElementById('prev-week').addEventListener('click', () => {
-        currentWeekStart.setDate(currentWeekStart.getDate() - 7);
-        updateAttendanceView();
-    });
-
-    document.getElementById('next-week').addEventListener('click', () => {
-        currentWeekStart.setDate(currentWeekStart.getDate() + 7);
-        updateAttendanceView();
-    });
-
-    updateAttendanceView();
-</script>
 {% endblock %}
