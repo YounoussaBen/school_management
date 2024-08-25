@@ -31,61 +31,6 @@
         min-height: 100vh;
     }
 
-    /* Sidebar Styling */
-    .sidebar {
-        width: var(--sidebar-width);
-        background-color: var(--sidebar-bg-color);
-        box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
-        transition: all 0.3s ease;
-        z-index: 1000;
-        overflow-x: hidden;
-    }
-
-    .sidebar-header {
-        padding: 20px;
-        text-align: center;
-        border-bottom: 1px solid var(--secondary-color);
-    }
-
-    .sidebar-header img {
-        width: 80px;
-        height: 80px;
-        border-radius: 50%;
-        object-fit: cover;
-        margin-bottom: 10px;
-        border: 2px solid var(--primary-color);
-    }
-
-    .sidebar-header h3 {
-        margin: 0;
-        font-size: 18px;
-        font-weight: 600;
-        color: var(--text-light);
-    }
-
-    .sidebar-menu {
-        padding: 20px 0;
-    }
-
-    .sidebar-menu a {
-        display: flex;
-        align-items: center;
-        padding: 12px 20px;
-        color: var(--text-light);
-        text-decoration: none;
-        transition: all 0.3s ease;
-    }
-
-    .sidebar-menu a:hover, .sidebar-menu a.active {
-        background-color: var(--primary-color);
-        color: #ffffff;
-    }
-
-    .sidebar-menu i {
-        font-size: 20px;
-        margin-right: 15px;
-    }
-
     /* Main Content Styling */
     .main-content {
         flex: 1;
@@ -213,6 +158,7 @@
 </style>
 {% endblock %}
 
+
 {% block content %}
 <div class="dashboard-container">
     {% include 'sidebar.html' %}
@@ -224,8 +170,20 @@
 
         <div class="dashboard-cards">
             <div class="card">
-                <h3>Courses Taught</h3>
-                <p>{{ courses.count }}</p>
+                <h3>Subjects Taught</h3>
+                <p>{{ subjects.count }}</p>
+            </div>
+            <div class="card">
+                <h3>Total Students</h3>
+                <p>{{ total_students }}</p>
+            </div>
+            <div class="card">
+                <h3>Today's Attendance</h3>
+                <a href="{% url 'teacher_attendance' %}" class="btn btn-primary">Mark Attendance</a>
+            </div>
+            <div class="card">
+                <h3>Upload Grades</h3>
+                <a href="{% url 'teacher_upload_grades' %}" class="btn btn-primary">Upload Excel</a>
             </div>
         </div>
 
@@ -235,19 +193,19 @@
                 {% for activity in recent_activities %}
                     <div class="activity-item">
                         <div class="activity-icon">
-                            {% if activity|dictsort:"-date" %}
-                                <i class="bi bi-book"></i>
+                            {% if activity.total_score %}
+                                <i class="bi bi-file-earmark-text"></i>
                             {% else %}
-                                <i class="bi bi-clipboard-check"></i>
+                                <i class="bi bi-person-check"></i>
                             {% endif %}
                         </div>
                         <div class="activity-details">
                             {% if activity.total_score %}
                                 <h4>Grade Posted</h4>
-                                <p>{{ activity.subject.name }}: {{ activity.grade }}</p>
+                                <p>{{ activity.subject.name }}: {{ activity.student.full_name }} - {{ activity.total_score }}</p>
                             {% elif activity.status %}
-                                <h4>Attendance Updated</h4>
-                                <p>{{ activity.subject.name }}: {{ activity.status }}</p>
+                                <h4>Attendance Marked</h4>
+                                <p>{{ activity.subject.name }}: {{ activity.student.full_name }} - {{ activity.status }}</p>
                             {% endif %}
                         </div>
                     </div>

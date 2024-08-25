@@ -58,13 +58,19 @@
 <!-- sidebar.html -->
 <aside class="sidebar">
     <div class="sidebar-header">
-        <img src="{{ student.profile_picture.url }}" alt="{{ student.first_name }} {{ student.last_name }}">
-        <h3>{{ student.first_name }} {{ student.last_name }}</h3>
+        <img src="{{ user.profile_picture.url }}" alt="{{ user.first_name }} {{ user.last_name }}">
+        <h3>{{ user.first_name }} {{ user.last_name }}</h3>
     </div>
     <nav class="sidebar-menu">
-        <a href="{% url 'student_home' %}"><i class="bi bi-person-circle"></i> <span>Home</span></a>
-        <a href="{% url 'student_courses' %}"><i class="bi bi-journal-bookmark"></i> <span>Course</span></a>
-        <a href="{% url 'student_attendance' %}"><i class="bi bi-calendar-check"></i> <span>Attendance</span></a>
-        <a href="{% url 'student_logout' %}"><i class="bi bi-box-arrow-right"></i> <span>Logout</span></a>
+        {% if user.role == 'Student' %}
+            <a href="{% url 'student_home' %}"><i class="bi bi-person-circle"></i> <span>Home</span></a>
+            <a href="{% url 'student_course' %}"><i class="bi bi-journal-bookmark"></i> <span>My Course</span></a>
+            <a href="{% url 'student_attendance' %}"><i class="bi bi-calendar-check"></i> <span>Attendance</span></a>
+        {% elif user.role == 'Teacher' %}
+            <a href="{% url 'teacher_home' %}"><i class="bi bi-person-circle"></i> <span>Home</span></a>
+            <a href="{% url 'teacher_subjects' %}"><i class="bi bi-journal-bookmark"></i> <span>My Subjects</span></a>
+            <a href="{% url 'teacher_attendance' %}"><i class="bi bi-calendar-check"></i> <span>Attendance</span></a>
+        {% endif %}
+        <a href="{% url 'logout' %}"><i class="bi bi-box-arrow-right"></i> <span>Logout</span></a>
     </nav>
 </aside>

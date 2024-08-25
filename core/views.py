@@ -2,11 +2,12 @@ from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse
-from .models import Subject, Course, Attendance, Grade
+from .models import Subject, Course, Attendance, Grade, User
 from django.template.loader import get_template
 from xhtml2pdf import pisa
 from datetime import datetime, timedelta
-from django.db.models import Avg
+from django.utils import timezone
+
 
 def home(request):
     return render(request, 'home.html')
@@ -26,7 +27,7 @@ def student_login(request):
 
 # Student Logout View
 @login_required(login_url='home')
-def student_logout(request):
+def user_logout(request):
     logout(request)
     return redirect('home')
 
@@ -47,7 +48,10 @@ def student_home(request):
 
     total_classes = Attendance.objects.filter(student=request.user).count()
     attended_classes = Attendance.objects.filter(student=request.user, status='Present').count()
+    unattended_classes = Attendance.objects.filter(student=request.user, status='Absent').count()
+
     attendance_rate = round((attended_classes / total_classes) * 100, 2) if total_classes > 0 else 0
+    absence_rate = round((unattended_classes / total_classes) * 100, 2) if total_classes > 0 else 0
 
     recent_grades = Grade.objects.filter(student=request.user).order_by('-id')[:5]
     recent_attendance = Attendance.objects.filter(student=request.user).order_by('-date')[:5]
@@ -63,13 +67,14 @@ def student_home(request):
         'course_name': course.name if course else 'Not enrolled in any course',
         'overall_gpa': overall_gpa,
         'attendance_rate': attendance_rate,
+        'absence_rate': absence_rate,
         'recent_activities': recent_activities,
     }
 
     return render(request, 'students/home.html', context)
 
 @login_required(login_url='home')
-def student_courses(request):
+def student_course(request):
     if request.user.role != 'Student':
         return redirect('home')
 
@@ -162,23 +167,90 @@ def teacher_home(request):
     if request.user.role != 'Teacher':
         return redirect('home')  # Redirect to home if not a teacher
 
-    # Get the courses the teacher is teaching
-    courses = Course.objects.filter(teacher=request.user)
+    # Get the subjects the teacher is teaching
+    subjects = Subject.objects.filter(teacher=request.user)
+
+    # Get total number of unique students across all subjects taught by the teacher
+    total_students = User.objects.filter(
+        role='Student',
+        courses__subjects__teacher=request.user
+    ).distinct().count()
+
+    # Get today's date
+    today = datetime.now().date()
 
     # Fetch Recent Activities (e.g., new grades, attendance, etc.)
-    recent_grades = Grade.objects.filter(subject__course__teacher=request.user).order_by('-id')[:5]
-    recent_attendance = Attendance.objects.filter(subject__course__teacher=request.user).order_by('-date')[:5]
+    recent_grades = Grade.objects.filter(subject__teacher=request.user).order_by('-id')[:5]
+    recent_attendance = Attendance.objects.filter(subject__teacher=request.user, date=today).order_by('-id')[:5]
 
     recent_activities = sorted(
         list(recent_grades) + list(recent_attendance),
-        key=lambda x: getattr(x, 'date', getattr(x, 'subject', None)),
+        key=lambda x: getattr(x, 'date', getattr(x, 'created_at', None)),
         reverse=True
     )[:5]
 
     context = {
         'teacher': request.user,
-        'courses': courses,
+        'subjects': subjects,
+        'total_students': total_students,
         'recent_activities': recent_activities,
     }
 
     return render(request, 'teachers/home.html', context)
+
+@login_required
+def teacher_attendance(request):
+    if request.user.role != 'Teacher':
+        return redirect('home')
+
+    today = timezone.now().date()
+    teacher = request.user
+    subjects = Subject.objects.filter(teacher=teacher)
+
+    if request.method == 'POST':
+        for key, value in request.POST.items():
+            if key.startswith('attendance_'):
+                _, subject_id, student_id = key.split('_')
+                subject = Subject.objects.get(id=subject_id)
+                student = User.objects.get(id=student_id)
+                status = value
+
+                Attendance.objects.update_or_create(
+                    date=today,
+                    subject=subject,
+                    student=student,
+                    defaults={'status': status}
+                )
+        
+        return redirect('teacher_attendance')
+
+    attendance_data = {}
+    for subject in subjects:
+        students = User.objects.filter(courses__subjects=subject, role='Student').distinct()
+        attendance_data[subject] = []
+        for student in students:
+            try:
+                attendance = Attendance.objects.get(date=today, subject=subject, student=student)
+                status = attendance.status
+            except Attendance.DoesNotExist:
+                status = None
+            attendance_data[subject].append({'student': student, 'status': status})
+
+    context = {
+        'teacher': teacher,
+        'attendance_data': attendance_data,
+        'today': today,
+    }
+
+    return render(request, 'teachers/attendance.html', context)
+
+@login_required
+def teacher_subjects(request):
+    # Logic for viewing subject details
+    return render(request, 'teachers/subject.html')
+
+@login_required
+def teacher_upload_grades(request):
+    # Logic for viewing and uploading grades via Excel for each subject
+    return render(request, 'teachers/upload_grades.html')
+
