@@ -98,6 +98,7 @@ class Grade(models.Model):
     exam_score = models.DecimalField(max_digits=5, decimal_places=2)
     total_score = models.DecimalField(max_digits=5, decimal_places=2, editable=False)
     grade = models.CharField(max_length=2)
+    remarks = models.TextField(null=True, blank=True)
 
     def save(self, *args, **kwargs):
         self.total_score = round((self.class_score + self.exam_score)/2, 2)

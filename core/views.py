@@ -13,12 +13,21 @@ import pandas as pd
 from .utils import get_grade_letter, get_gpa
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
+from django.db.models import Sum, F
+from weasyprint import HTML
 
 
 def home(request):
     return render(request, 'home.html')
 
-# Student Login View
+# Logout View
+@login_required(login_url='home')
+def user_logout(request):
+    logout(request)
+    return redirect('home')
+
+
+# Student  View
 def student_login(request):
     if request.method == "POST":
         email = request.POST.get('email')
@@ -30,14 +39,6 @@ def student_login(request):
         else:
             return render(request, 'students/login.html', {'error': 'Invalid credentials'})
     return render(request, 'students/login.html')
-
-# Student Logout View
-@login_required(login_url='home')
-def user_logout(request):
-    logout(request)
-    return redirect('home')
-
-# Student Home View
 
 @login_required(login_url='home')
 def student_home(request):
@@ -85,7 +86,6 @@ def student_home(request):
     }
 
     return render(request, 'students/home.html', context)
-
 
 @login_required(login_url='home')
 def student_course(request):
@@ -143,27 +143,94 @@ def download_report(request, course_id):
     if not request.user.is_authenticated:
         return redirect('home')
 
-    course = Course.objects.get(id=course_id)
+    # Get course and related grades
+    course = get_object_or_404(Course, id=course_id)
     grades = Grade.objects.filter(student=request.user, subject__course=course)
     attendance = Attendance.objects.filter(student=request.user)
-    template_path = 'students/report_template.html'
+    student_profile = get_object_or_404(StudentProfile, user=request.user)
+    student_id = student_profile.student_id
+
+    # Calculate overall GPA based on credits
+    if grades.exists():
+        total_weighted_gpa = sum(get_gpa(grade.total_score) * grade.subject.credits for grade in grades)
+        total_credits = sum(grade.subject.credits for grade in grades)
+        overall_gpa = round(total_weighted_gpa / total_credits, 2)
+    else:
+        overall_gpa = 'N/A'
+
+    # Calculate overall position
+    all_students_gpa = Grade.objects.filter(subject__course=course).values('student').annotate(
+        gpa=Sum(F('total_score') * F('subject__credits')) / Sum('subject__credits')
+    ).order_by('-gpa')
+    student_gpa = all_students_gpa.filter(student=request.user.id).first().get('gpa')
+    overall_position = all_students_gpa.filter(gpa__gt=student_gpa).count() + 1
+
+    # Calculate subject positions
+    subject_positions = {}
+    for grade in grades:
+        subject_scores = Grade.objects.filter(subject=grade.subject).values('student').annotate(
+            total_score=Sum(F('total_score'))
+        ).order_by('-total_score')
+        student_score = subject_scores.filter(student=request.user.id).first().get('total_score')
+        subject_position = subject_scores.filter(total_score__gt=student_score).count() + 1
+        subject_positions[grade.subject.id] = subject_position
+
+    # Attendance details
+    days_present = attendance.filter(status='Present').count()
+    total_days = attendance.count()
+    
+    # Prepare teacher's remarks
+    conduct = student_profile.conduct
+    interest = student_profile.interest
+    attitude = student_profile.attitude
+    class_teacher_remark = student_profile.class_teacher_remark
+    head_teacher_remark = student_profile.head_teacher_remark if student_profile.head_teacher_remark else ''
+    today = datetime.now().date()
+
+    # Prepare context for the PDF template
     context = {
+        'school_logo_url': 'https://play-lh.googleusercontent.com/y3x_qIXz5sKBn4hEG0HzmJc-neevDBMzP4WvepMZzPlBBMzgRYxKP_bwEytYM_A5UKCk',
         'student': request.user,
         'course': course,
-        'grades': grades,
-        'attendance': attendance
+        'grades': [
+            {
+                'subject': grade.subject,
+                'class_score': grade.class_score,
+                'exam_score': grade.exam_score,
+                'total_score': grade.total_score,
+                'grade': get_grade_letter(grade.total_score),
+                'subject_position': subject_positions.get(grade.subject.id, 'N/A'),
+                'remarks': grade.remarks
+            }
+            for grade in grades
+        ],
+        'days_present': days_present,
+        'total_days': total_days,
+        'conduct': conduct,
+        'interest': interest,
+        'attitude': attitude,
+        'class_teacher_remark': class_teacher_remark,
+        'head_teacher_remark': head_teacher_remark,
+        'today': today,
+        'overall_gpa': overall_gpa,
+        'overall_position': overall_position,
+        'student_id': student_id
     }
-    response = HttpResponse(content_type='application/pdf')
-    response['Content-Disposition'] = f'attachment; filename="report_{course.name}.pdf"'
+    
+    template_path = 'students/report_template.html'
     template = get_template(template_path)
     html = template.render(context)
-    pisa_status = pisa.CreatePDF(html, dest=response)
-    if pisa_status.err:
-        return HttpResponse('We had some errors <pre>' + html + '</pre>')
+    
+    # Generate PDF using WeasyPrint
+    response = HttpResponse(content_type='application/pdf')
+    response['Content-Disposition'] = f'attachment; filename="report_{course.name}.pdf"'
+    HTML(string=html).write_pdf(response)
+    
     return response
 
 
-# Teacher Login View
+
+# Teacher View
 def teacher_login(request):
     if request.method == "POST":
         email = request.POST.get('email')
@@ -212,7 +279,6 @@ def teacher_home(request):
     }
 
     return render(request, 'teachers/home.html', context)
-
 
 @login_required
 def teacher_attendance(request):
@@ -309,7 +375,6 @@ def teacher_subjects(request):
 
     return render(request, 'teachers/subjects.html', context)
 
-
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def upload_grades(request):
@@ -333,8 +398,9 @@ def upload_grades(request):
             student_id = row.get('student_id')
             class_score = row.get('class_score')
             exam_score = row.get('exam_score')
+            remarks = row.get('remarks')
 
-            if not all([student_id, class_score, exam_score]):
+            if not all([student_id, class_score, exam_score, remarks]):
                 continue  # Skip incomplete rows
 
             student_profile = get_object_or_404(StudentProfile, student_id=student_id)
@@ -349,7 +415,8 @@ def upload_grades(request):
                     'class_score': class_score,
                     'exam_score': exam_score,
                     'total_score': total_score,
-                    'grade': grade_letter
+                    'grade': grade_letter,
+                    'remarks': remarks
                 }
             )
 

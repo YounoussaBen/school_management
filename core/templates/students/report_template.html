@@ -3,51 +3,180 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Report Card</title>
+    <title>End of Term Report Card</title>
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            color: #212529;
+            margin: 0;
+            padding: 0;
+            font-size: 11px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            padding: 20px;
+            max-width: 750px;
+            margin: auto;
+            background-color: white;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #007bff;
+            padding-bottom: 10px;
+        }
+        .header img {
+            width: 80px;
+            height: 80px;
+            object-fit: cover;
+            border-radius: 12px;
+            margin-bottom: 10px;
+        }
+        .header h1 {
+            color: #007bff;
+            font-size: 28px;
+            margin: 0;
+            text-transform: uppercase;
+        }
+        .header h2 {
+            color: #6c757d;
+            font-size: 14px;
+            margin: 5px 0 0;
+        }
+        .student-info {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #dee2e6;
+        }
+        .student-info .info {
+            width: 48%;
+        }
+        .student-info p {
+            margin: 5px 0;
+            line-height: 1.4;
+        }
+        h3 {
+            color: #007bff;
+            margin-top: 20px;
+            margin-bottom: 10px;
+            font-size: 16px;
+            border-left: 5px solid #007bff;
+            padding-left: 10px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+            font-size: 11px;
+            background-color: white;
+            box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+        }
+        table, th, td {
+            border: 1px solid #dee2e6;
+        }
+        th, td {
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #007bff;
+            color: white;
+        }
+        tr:nth-child(even) {
+            background-color: #f8f9fa;
+        }
+        .footer-sections {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+        }
+        .footer-sections .section {
+            width: 48%;
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+        }
+        .footer-sections .section h3 {
+            margin-top: 0;
+        }
+        .remarks p {
+            margin: 5px 0;
+            line-height: 1.4;
+        }
+    </style>
 </head>
 <body>
-    <h2>Report Card for {{ student.first_name }} {{ student.last_name }}</h2>
-    <p>Course: {{ course.name }}</p>
-    <p>Date: {{ today }}</p>
+    <div class="container">
+        <div class="header">
+            <img src="{{ school_logo_url }}" alt="School Logo">
+            <h1>End of Term Report Card</h1>
+            <h2>{{ school_name }}</h2>
+        </div>
 
-    <h3>Grades</h3>
-    <table>
-        <tr>
-            <th>Subject</th>
-            <th>Class Score</th>
-            <th>Exam Score</th>
-            <th>Total Score</th>
-            <th>Grade</th>
-        </tr>
-        {% for grade in grades %}
-        <tr>
-            <td>{{ grade.subject.name }}</td>
-            <td>{{ grade.class_score }}</td>
-            <td>{{ grade.exam_score }}</td>
-            <td>{{ grade.total_score }}</td>
-            <td>{{ grade.grade }}</td>
-        </tr>
-        {% endfor %}
-    </table>
+        <div class="student-info">
+            <div class="info">
+                <p><strong>Name:</strong> {{ student.first_name }} {{ student.last_name }}</p>
+                <p><strong>ID Number:</strong> {{ student_id }}</p>
+                <p><strong>Course:</strong> {{ course.name }}</p>
+            </div>
+            <div class="info">
+                <p><strong>Overall Position:</strong> {{ overall_position }}</p>
+                <p><strong>Overall GPA:</strong> {{ overall_gpa }}</p>
+                <p><strong>Report Date:</strong> {{ today }}</p>
+            </div>
+        </div>
 
-    <h3>Attendance</h3>
-    <table>
-        <tr>
-            <th>Date</th>
-            <th>Status</th>
-        </tr>
-        {% for record in attendance %}
-        <tr>
-            <td>{{ record.date }}</td>
-            <td>{{ record.status }}</td>
-        </tr>
-        {% endfor %}
-    </table>
+        <h3>Subject Grades</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>Subject</th>
+                    <th>Class Score</th>
+                    <th>Exam Score</th>
+                    <th>Total Score</th>
+                    <th>Grade</th>
+                    <th>Subject Position</th>
+                    <th>Remarks</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for grade in grades %}
+                <tr>
+                    <td>{{ grade.subject.name }}</td>
+                    <td>{{ grade.class_score }}</td>
+                    <td>{{ grade.exam_score }}</td>
+                    <td>{{ grade.total_score }}</td>
+                    <td>{{ grade.grade }}</td>
+                    <td>{{ grade.subject_position }}</td>
+                    <td>{{ grade.remarks }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
 
-    <h3>Teacher's Remarks</h3>
-    <p>{{ course.teacher_remarks }}</p>
-
-    <h3>Head Teacher's Remarks</h3>
-    <p>{{ course.head_teacher_remarks }}</p>
+        <div class="footer-sections">
+            <div class="section">
+                <h3>Attendance</h3>
+                <p><strong>Days Present:</strong> {{ days_present }}</p>
+                <p><strong>Total Days:</strong> {{ total_days }}</p>
+            </div>
+            <div class="section">
+                <h3>Teacher's Remarks</h3>
+                <div class="remarks">
+                    <p><strong>Conduct:</strong> {{ conduct }}</p>
+                    <p><strong>Interest:</strong> {{ interest }}</p>
+                    <p><strong>Attitude:</strong> {{ attitude }}</p>
+                    <p><strong>Class Teacher's Remark:</strong> {{ class_teacher_remark }}</p>
+                    {% if head_teacher_remark %}
+                        <p><strong>Head Teacher's Remark:</strong> {{ head_teacher_remark }}</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
 </body>
 </html>
