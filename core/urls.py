@@ -17,7 +17,7 @@ urlpatterns = [
     path('teachers/login', views.teacher_login, name='teacher_login'),
     path('teachers/', views.teacher_home, name='teacher_home'),
     path('teachers/attendance/', views.teacher_attendance, name='teacher_attendance'),
-    path('teachers/upload-grades/', views.teacher_upload_grades, name='teacher_upload_grades'),
     path('teachers/subjects/', views.teacher_subjects, name='teacher_subjects'),
+    path('api/upload-grades/', views.upload_grades, name='upload-grades'),
 
 ]

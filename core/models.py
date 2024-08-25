@@ -51,11 +51,12 @@ class User(AbstractBaseUser, PermissionsMixin):
 
 class StudentProfile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, limit_choices_to={'role': 'Student'})
-    conduct = models.TextField()
-    interest = models.TextField()
-    attitude = models.TextField()
-    class_teacher_remark = models.TextField()
-    head_teacher_remark = models.TextField()
+    student_id = models.CharField(max_length=20, unique=True, null=True, blank=True)
+    conduct = models.TextField(null=True, blank=True)
+    interest = models.TextField(null=True, blank=True)
+    attitude = models.TextField(null=True, blank=True)
+    class_teacher_remark = models.TextField(null=True, blank=True)
+    head_teacher_remark = models.TextField(null=True, blank=True)
 
     def __str__(self):
         return f"{self.user.first_name} {self.user.last_name} Profile"
@@ -74,6 +75,7 @@ class Subject(models.Model):
     name = models.CharField(max_length=100)
     course = models.ForeignKey(Course, on_delete=models.CASCADE, related_name='subjects')
     teacher = models.ForeignKey(User, on_delete=models.CASCADE, limit_choices_to={'role': 'Teacher'})
+    credits = models.PositiveIntegerField(default=3)
 
     def __str__(self):
         return f"{self.name} ({self.course.name})"
@@ -98,7 +100,7 @@ class Grade(models.Model):
     grade = models.CharField(max_length=2)
 
     def save(self, *args, **kwargs):
-        self.total_score = self.class_score + self.exam_score
+        self.total_score = round((self.class_score + self.exam_score)/2, 2)
         super().save(*args, **kwargs)
 
     def __str__(self):
